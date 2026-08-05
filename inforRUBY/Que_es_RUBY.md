@@ -1,5 +1,6 @@
 #Investigación de RUBY
-###Integrantes: Wilberth Daniel Velasquez FLores-202408061 y Claudia Estefanía Zorin Tajiboy-2024080301
+
+##Integrantes: Wilberth Daniel Velasquez FLores-202408061 y Claudia Estefanía Zorin Tajiboy-2024080301
 
 ## ¿Que es RUBY?
 Ruby es un lenguaje de Scripting es decir un lenguaje de programacion para escribir scrips (guiones o secuencias de comandos), pero orientado a codigo abierto y objetos, tambien es un lenguaje de programacion interpretado de alto nivel,  Ruby fue diseñado en la decada de los 1990 por Yukihiro Matsumoto en Japón con el objetivo de crear un lenguaje mas equilibrado y agradable para cualquier programador, centradose en la simplicidad y la eficiencia en la escritura de codigo, ademas Ruby destaca de otros lenguajes por su sintaxis elegante y natural ya que este facilita su escritura y lectura del codigo.
@@ -17,5 +18,5 @@ Entre las principales ventajas de Ruby, encontramos que su sintaxis intuitiva fa
 
 Pero asi como ventajas tiene desventajas como hay que decir que el rendimiento puede ser un problema, especialmente para aplicaciones que manejan grandes volúmenes de transacciones o datos en tiempo real, esto sucede porque este lenguaje de programación  puede ser más lento en comparación con otros como NodeJS o Python, además, aunque Ruby es flexible, esta característica puede llevar a dificultades cuando se trabaja en grandes equipos, donde las modificaciones en el código base pueden llevar a inconsistencias y dificultades en el mantenimiento​​.
 
-##Conclusión
+## Conclusión
 Nosotros como equipo utilizaremos RUBY para nuestro MiniProyecto de Compiladores, porque fue asignado a nosotros e investigando se nos facilitaria al momento de programar.
