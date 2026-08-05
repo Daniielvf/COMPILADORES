@@ -1,0 +1,20 @@
+Operadores:
+Segun: https://marcossarmiento.com/2015/09/15/operadores-en-ruby/
+
+Operadores Aritmeticos:
+-"**": exponencial
+-"*, /, %": multiplicacion, division, modulo
+-"+, –": suma y resta
+
+Operadores Relacionales:
+-"==": igual que
+-"!=": diferente de
+-"<": menor que
+-">": mayor que
+-"<=": menor o igual que
+-">=": mayor o igual que
+
+Operadores logicos
+-"&&, and": Y
+-"||, or": O
+-"!": no
