@@ -1,0 +1,41 @@
+Palabras reservadas:
+Segun: https://es.wikibooks.org/wiki/Programaci%C3%B3n_en_Ruby/Palabras_reservadas
+
+-"alias": Crea un alias para un operador, metodo o variable global que ya exista
+-"and": operador logico, igual a && pero con menor procedencia
+-"break": finaliza un while o un util loop, o un metodo dentro de un bloque
+-"case": compara una expresión con una clausula when correspondiente 
+-"class": define una clase
+-"def": inicia la definición de un método
+-"defined?":determina si un metodo, una variable o un bloque existe
+-"do": comienza un bloque
+-"else": ejecuta el codigo que continua si la condicion previa no es true
+-"elsif": ejecuta el codigo que continua si la condicional previa no es true
+-"end": finaliza un bloque de codigo
+-"ensure": ejecuta la terminacion de un bloque
+-"false": logico o booleano
+-"true": logico o booleano
+-"for": comienza un loop 
+-"if": se ejecuta un bloque de codigo si la declaracion condicional es true
+-"in": usado con el loop for
+-"module":define un modulo
+-"next":salta al punto inmediatamente despues de la evaluacion del loop condicional
+-"nil": vacio, no inicializado, invalido
+-"not": operador logico
+-"or": operdor logico igual
+-"redo": salta despues de un loop condicional
+-"rescue": evalua una expresion despues de una excepcion es alzada
+-"retry": cuando se llma fuera de rescue, repite una llamada a metodo, dentro de rescue salta a un blique superior
+-"return": regresa u valor de un metodo o un bloque
+-"self": objeto contemporaneo
+-"super": llama a metodo del mismo nombre en la superclase
+-"then":separador usado com if, unless, when, case y rescue
+-"undef": crea un metodo indefinido en la clase contemporanea
+-"unless": ejecuta un bloque de código si la declaración condicional es false
+-"until": ejecuta un bloque de codigo mientras la declaracion condicioal es es false
+-"when": inicia una clausula 
+-"while": ejecuta un bloque de codigo mientras la declaracon condicional es true
+-"yield": ejecuta un bloque pasado a un metodo
+-"_FILE_": nombre del archivo de origen contemporaneo
+-"_LINE_": numero de la linea contemporanea de archivo de origen contemporaneo
+
