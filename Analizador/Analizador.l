@@ -10,6 +10,18 @@ int esReservada(char palabra[]);
 
 %%
 
+-?[0-9]+\.[0-9]+ {
+
+    printf("Linea %d: Flotante -> %s\n", linea, yytext);
+
+}
+
+-?[0-9]+ {
+
+    printf("Linea %d: Entero -> %s\n", linea, yytext);
+
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
 
     if(esReservada(yytext))
