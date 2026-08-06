@@ -1,18 +1,22 @@
 class Persona
 
-    def initialize(nombre, edad, promedio)
+    def initialize(nombre, edad, promedio, activo)
 
         @nombre = nombre
-        @edad = 20
-        @promedio = 89.75
+        @edad = 21
+        @promedio = 91.75
+        @activo = true
 
     end
 
     def mostrar
 
-        if @edad >= 18
+        if @activo
 
             puts @nombre
+            puts @edad
+            puts @promedio
+
             return true
 
         else
@@ -30,9 +34,10 @@ class Estudiante < Persona
 
     def estudiar
 
-        nota1 = 85
-        nota2 = 92.50
-        promedio = 88.75
+        nota1 = 80
+        nota2 = 90
+        promedio = 85.50
+        aprobado = true
 
         for i in 1..5
 
@@ -43,6 +48,16 @@ class Estudiante < Persona
         while nota1 > 50
 
             nota1 = nota1 - 1
+
+        end
+
+        if aprobado
+
+            return true
+
+        else
+
+            return false
 
         end
 
@@ -58,12 +73,16 @@ module Universidad
         def iniciar
 
             contador = 0
+            promedio = 75.25
+            activo = false
 
             while contador < 3
 
                 contador = contador + 1
 
             end
+
+            return activo
 
         end
 
@@ -80,10 +99,10 @@ begin
 
 rescue
 
-    puts "Ocurrio un error"
+    puts "Error"
 
 ensure
 
-    puts "Programa finalizado"
+    puts "Fin"
 
 end

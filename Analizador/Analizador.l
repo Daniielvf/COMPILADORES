@@ -22,6 +22,18 @@ int esReservada(char palabra[]);
 
 }
 
+"true" {
+
+    printf("Linea %d: Booleano -> %s\n", linea, yytext);
+
+}
+
+"false" {
+
+    printf("Linea %d: Booleano -> %s\n", linea, yytext);
+
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
 
     if(esReservada(yytext))
@@ -81,8 +93,6 @@ int esReservada(char palabra[])
         return 1;
     else if(strcmp(palabra, "ensure") == 0)
         return 1;
-    else if(strcmp(palabra, "false") == 0)
-        return 1;
     else if(strcmp(palabra, "for") == 0)
         return 1;
     else if(strcmp(palabra, "if") == 0)
@@ -112,8 +122,6 @@ int esReservada(char palabra[])
     else if(strcmp(palabra, "super") == 0)
         return 1;
     else if(strcmp(palabra, "then") == 0)
-        return 1;
-    else if(strcmp(palabra, "true") == 0)
         return 1;
     else if(strcmp(palabra, "undef") == 0)
         return 1;
