@@ -1,9 +1,10 @@
+import sys
 from PySide6.QtWidgets import QApplication
-from ventana import Ventana
+from ventana import VentanaPrincipal
 
-app = QApplication([])
+app = QApplication(sys.argv)
 
-ventana = Ventana()
+ventana = VentanaPrincipal()
 ventana.show()
 
-app.exec()
+sys.exit(app.exec())
