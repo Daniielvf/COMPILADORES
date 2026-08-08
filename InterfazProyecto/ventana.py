@@ -3,7 +3,9 @@ from PySide6.QtGui import QPixmap
 from estilos import ESTILO
 import subprocess
 import os
+
 from reportes.generador_pdf import generar_reporte_1, generar_reporte_2
+from database.mongo import guardar_tabla_simbolos
 
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -28,6 +30,13 @@ class VentanaPrincipal(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # =========================
+        # Datos del analisis
+        # =========================
+        self.tokens = []
+        self.estadisticas = {}
+        self.simbolos = []
 
         self.setStyleSheet(ESTILO)
         self.setWindowTitle("Analizador Léxico Ruby")
@@ -220,11 +229,19 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         estadoLayout = QHBoxLayout()
 
-        self.lblEstado = QLabel("●  Estado:  Listo para analizar")
+        self.lblEstado = QLabel(
+            "●  Estado:  Listo para analizar"
+        )
+
         self.lblEstado.setObjectName("estado")
 
-        self.lblTokens = QLabel("Tokens encontrados:  0")
-        self.lblTokens.setObjectName("tokensEncontrados")
+        self.lblTokens = QLabel(
+            "Tokens encontrados:  0"
+        )
+
+        self.lblTokens.setObjectName(
+            "tokensEncontrados"
+        )
 
         estadoLayout.addWidget(self.lblEstado)
         estadoLayout.addStretch()
@@ -238,15 +255,37 @@ class VentanaPrincipal(QMainWindow):
         botones = QHBoxLayout()
         botones.setSpacing(12)
 
-        self.btnReporte1 = QPushButton("▣  Reporte General")
-        self.btnReporte2 = QPushButton("▦  Tabla de Símbolos")
-        self.btnMongo = QPushButton("◉  MongoDB")
-        self.btnSalir = QPushButton("✕  Salir")
+        self.btnReporte1 = QPushButton(
+            "▣  Reporte General"
+        )
 
-        self.btnReporte1.setObjectName("btnInferior")
-        self.btnReporte2.setObjectName("btnInferior")
-        self.btnMongo.setObjectName("btnInferior")
-        self.btnSalir.setObjectName("btnSalir")
+        self.btnReporte2 = QPushButton(
+            "▦  Tabla de Símbolos"
+        )
+
+        self.btnMongo = QPushButton(
+            "◉  MongoDB"
+        )
+
+        self.btnSalir = QPushButton(
+            "✕  Salir"
+        )
+
+        self.btnReporte1.setObjectName(
+            "btnInferior"
+        )
+
+        self.btnReporte2.setObjectName(
+            "btnInferior"
+        )
+
+        self.btnMongo.setObjectName(
+            "btnInferior"
+        )
+
+        self.btnSalir.setObjectName(
+            "btnSalir"
+        )
 
         self.btnReporte1.setMinimumHeight(45)
         self.btnReporte2.setMinimumHeight(45)
@@ -263,24 +302,54 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         # Conectar botones
         # =========================
-        self.btnReporte1.clicked.connect(self.crearReporte1)
-        self.btnReporte2.clicked.connect(self.crearReporte2)
+        self.btnReporte1.clicked.connect(
+            self.crearReporte1
+        )
 
-        self.btnSalir.clicked.connect(self.close)
-        self.btnAnalizar.clicked.connect(self.analizar)
-        self.btnExaminar.clicked.connect(self.abrirArchivo)
+        self.btnReporte2.clicked.connect(
+            self.crearReporte2
+        )
+
+        self.btnMongo.clicked.connect(
+            self.guardarMongoDB
+        )
+
+        self.btnSalir.clicked.connect(
+            self.close
+        )
+
+        self.btnAnalizar.clicked.connect(
+            self.analizar
+        )
+
+        self.btnExaminar.clicked.connect(
+            self.abrirArchivo
+        )
 
     # ======================================
     # Los metodos
     # ======================================
 
-    def crearTarjeta(self, grid, fila, columna, icono, texto):
+    def crearTarjeta(
+        self,
+        grid,
+        fila,
+        columna,
+        icono,
+        texto
+    ):
 
         tarjeta = QFrame()
         tarjeta.setObjectName("tarjeta")
 
         layoutTarjeta = QHBoxLayout()
-        layoutTarjeta.setContentsMargins(15, 12, 15, 12)
+
+        layoutTarjeta.setContentsMargins(
+            15,
+            12,
+            15,
+            12
+        )
 
         lblIcono = QLabel(icono)
         lblIcono.setObjectName("iconoTarjeta")
@@ -302,15 +371,20 @@ class VentanaPrincipal(QMainWindow):
 
         tarjeta.setLayout(layoutTarjeta)
 
-        grid.addWidget(tarjeta, fila, columna)
+        grid.addWidget(
+            tarjeta,
+            fila,
+            columna
+        )
 
         return lblNumero
 
     def analizar(self):
 
-         archivo = self.txtArchivo.text()
+        archivo = self.txtArchivo.text()
 
-         if archivo == "":
+        if archivo == "":
+
             QMessageBox.warning(
                 self,
                 "Error",
@@ -318,142 +392,370 @@ class VentanaPrincipal(QMainWindow):
             )
 
             return
-         with open(archivo, "r") as archivo_ruby:
-            contenido = archivo_ruby.readlines()
 
-         cantidad_lineas = len(contenido)
-         cantidad_caracteres = 0
-         self.lblEstado.setText(
-            "●  Estado:  Analizando..."
-        )
+        try:
 
-         for linea_archivo in contenido:
-            cantidad_caracteres += len(linea_archivo)
-
-         self.lblLineas.setText(str(cantidad_lineas))
-         self.lblCaracteres.setText(str(cantidad_caracteres))
-         ruta_analizador = os.path.join(
-         os.path.dirname(__file__),
-         "..",
-         "Analizador",
-         "Analizador"
-         )
-
-         print("Archivo Ruby:", archivo)
-         print("Analizador Flex:", ruta_analizador)
-         with open(archivo, "r") as entrada:
-
-            resultado = subprocess.run(
-                [ruta_analizador],
-                stdin=entrada,
-                capture_output=True,
-                text=True
+            self.lblEstado.setText(
+                "●  Estado:  Analizando..."
             )
 
-         lineas_resultado = resultado.stdout.splitlines()
-         self.tabla.setRowCount(0)
-         conta_reservadas = 0
-         conta_identificadores = 0
-         conta_enteros = 0
-         conta_flotantes = 0
-         conta_booleanos = 0
-         conta_cadenas = 0
-         conta_operadores = 0
-         for resultado_linea in lineas_resultado:
+            # =========================
+            # Leer archivo Ruby
+            # =========================
+            with open(
+                archivo,
+                "r",
+                encoding="utf-8"
+            ) as archivo_ruby:
 
-            partes = resultado_linea.split(" -> ")
+                contenido = archivo_ruby.readlines()
 
-            if len(partes) == 2:
+            cantidad_lineas = len(contenido)
+
+            cantidad_caracteres = 0
+
+            for linea_archivo in contenido:
+                cantidad_caracteres += len(
+                    linea_archivo
+                )
+
+            # =========================
+            # Ruta del analizador Flex
+            # =========================
+            ruta_analizador = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "Analizador",
+                "Analizador"
+            )
+
+            # =========================
+            # Ejecutar analizador Flex
+            # =========================
+            with open(
+                archivo,
+                "r",
+                encoding="utf-8"
+            ) as entrada:
+
+                resultado = subprocess.run(
+                    [ruta_analizador],
+                    stdin=entrada,
+                    capture_output=True,
+                    text=True
+                )
+
+            if resultado.returncode != 0:
+
+                raise Exception(
+                    resultado.stderr
+                )
+
+            lineas_resultado = (
+                resultado.stdout.splitlines()
+            )
+
+            # =========================
+            # Limpiar datos anteriores
+            # =========================
+            self.tabla.setRowCount(0)
+
+            self.tokens = []
+            self.simbolos = []
+            self.estadisticas = {}
+
+            conta_reservadas = 0
+            conta_identificadores = 0
+            conta_enteros = 0
+            conta_flotantes = 0
+            conta_booleanos = 0
+            conta_cadenas = 0
+            conta_operadores = 0
+
+            conteo_reservadas = {}
+
+            # =========================
+            # Tokens de operadores
+            # =========================
+            tokens_operadores = {
+                "=": "TK_ASIGNACION",
+                "+": "TK_SUMA",
+                "-": "TK_RESTA",
+                "*": "TK_MULTIPLICACION",
+                "/": "TK_DIVISION",
+                "%": "TK_MODULO",
+                "==": "TK_IGUALDAD",
+                "!=": "TK_DIFERENTE",
+                ">": "TK_MAYOR",
+                "<": "TK_MENOR",
+                ">=": "TK_MAYOR_IGUAL",
+                "<=": "TK_MENOR_IGUAL",
+                "&&": "TK_AND",
+                "||": "TK_OR",
+                "!": "TK_NOT"
+            }
+
+            # =========================
+            # Procesar salida de Flex
+            # =========================
+            for resultado_linea in lineas_resultado:
+
+                partes = resultado_linea.split(
+                    " -> ",
+                    1
+                )
+
+                if len(partes) != 2:
+                    continue
 
                 izquierda = partes[0]
                 lexema = partes[1]
 
-                datos = izquierda.split(": ")
+                datos = izquierda.split(
+                    ": ",
+                    1
+                )
 
-                if len(datos) == 2:
-                    tipo = datos[1]
+                if len(datos) != 2:
+                    continue
 
-                    if tipo == "Palabra reservada":
-                        conta_reservadas += 1
+                numero_linea = (
+                    datos[0]
+                    .replace("Linea ", "")
+                )
 
-                    elif tipo == "Identificador":
-                        conta_identificadores += 1
+                tipo = datos[1]
 
-                    elif tipo == "Entero":
-                        conta_enteros += 1
+                # =========================
+                # Contadores
+                # =========================
+                if tipo == "Palabra reservada":
 
-                    elif tipo == "Flotante":
-                        conta_flotantes += 1
+                    conta_reservadas += 1
 
-                    elif tipo == "Booleano":
-                        conta_booleanos += 1
+                    if lexema in conteo_reservadas:
 
-                    elif tipo == "Cadena":
-                        conta_cadenas += 1
+                        conteo_reservadas[
+                            lexema
+                        ] += 1
 
-                    elif tipo == "Operador":
-                        conta_operadores += 1
-
-
-
-                    if tipo == "Palabra reservada":
-                        token = "palabra reservada"
-
-                    elif tipo == "Identificador":
-                        token = "ID"
-
-                    elif tipo == "Entero":
-                        token = "entero"
-
-                    elif tipo == "Flotante":
-                        token = "flotante"
-
-                    elif tipo == "Booleano":
-                        token = "booleano"
-
-                    elif tipo == "Cadena":
-                        token = "cadena"
-                    elif tipo == "Operador":
-
-                        if lexema == "=":
-                            token = "op_asi"
-
-                        elif lexema == "+" or lexema == "-" or lexema == "*" or lexema == "/" or lexema == "%":
-                            token = "operador aritmetico"
-
-                        elif lexema == "==" or lexema == "!=" or lexema == ">" or lexema == "<" or lexema == ">=" or lexema == "<=":
-                            token = "operador relacional"
-
-                        elif lexema == "&&" or lexema == "||" or lexema == "!":
-                            token = "operador logico"
-
-                        else:
-                            token = "operador"
                     else:
-                        token = tipo
 
-                    numero_linea = datos[0].replace("Linea ", "")
-                    tipo = datos[1]
+                        conteo_reservadas[
+                            lexema
+                        ] = 1
 
-                    fila = self.tabla.rowCount()
-                    self.tabla.insertRow(fila)
+                elif tipo == "Identificador":
 
-                    self.tabla.setItem(fila, 0, QTableWidgetItem(token))
-                    self.tabla.setItem(fila, 1, QTableWidgetItem(lexema))
-                    self.tabla.setItem(fila, 2, QTableWidgetItem(tipo))
-                    self.tabla.setItem(fila, 3, QTableWidgetItem(numero_linea))
+                    conta_identificadores += 1
 
-            self.lblReservadas.setText(str(conta_reservadas))
-            self.lblIdentificadores.setText(str(conta_identificadores))
-            self.lblEnteros.setText(str(conta_enteros))
-            self.lblFlotantes.setText(str(conta_flotantes))
-            self.lblBooleanos.setText(str(conta_booleanos))
-            self.lblCadenas.setText(str(conta_cadenas))
-            self.lblOperadores.setText(str(conta_operadores))
+                elif tipo == "Entero":
 
-            total_tokens = self.tabla.rowCount()
+                    conta_enteros += 1
+
+                elif tipo == "Flotante":
+
+                    conta_flotantes += 1
+
+                elif tipo == "Booleano":
+
+                    conta_booleanos += 1
+
+                elif tipo == "Cadena":
+
+                    conta_cadenas += 1
+
+                elif tipo == "Operador":
+
+                    conta_operadores += 1
+
+                # =========================
+                # Asignar token
+                # =========================
+                if tipo == "Palabra reservada":
+
+                    token = (
+                        "TK_" +
+                        lexema.upper()
+                    )
+
+                elif tipo == "Identificador":
+
+                    token = "TK_IDENTIFICADOR"
+
+                elif tipo == "Entero":
+
+                    token = "TK_ENTERO"
+
+                elif tipo == "Flotante":
+
+                    token = "TK_FLOTANTE"
+
+                elif tipo == "Booleano":
+
+                    if lexema == "true":
+
+                        token = "TK_TRUE"
+
+                    else:
+
+                        token = "TK_FALSE"
+
+                elif tipo == "Cadena":
+
+                    token = "TK_CADENA"
+
+                elif tipo == "Operador":
+
+                    token = tokens_operadores.get(
+                        lexema,
+                        "TK_OPERADOR"
+                    )
+
+                else:
+
+                    token = "TK_DESCONOCIDO"
+
+                # =========================
+                # Guardar token
+                # =========================
+                self.tokens.append({
+                    "token": token,
+                    "lexema": lexema,
+                    "tipo": tipo,
+                    "linea": int(numero_linea)
+                })
+
+                # =========================
+                # Tabla de simbolos
+                # =========================
+                if tipo == "Identificador":
+
+                    self.simbolos.append({
+                        "token": token,
+                        "lexema": lexema,
+                        "tipo": tipo,
+                        "linea": int(numero_linea)
+                    })
+
+                # =========================
+                # Mostrar en tabla
+                # =========================
+                fila = self.tabla.rowCount()
+
+                self.tabla.insertRow(fila)
+
+                self.tabla.setItem(
+                    fila,
+                    0,
+                    QTableWidgetItem(token)
+                )
+
+                self.tabla.setItem(
+                    fila,
+                    1,
+                    QTableWidgetItem(lexema)
+                )
+
+                self.tabla.setItem(
+                    fila,
+                    2,
+                    QTableWidgetItem(tipo)
+                )
+
+                self.tabla.setItem(
+                    fila,
+                    3,
+                    QTableWidgetItem(
+                        numero_linea
+                    )
+                )
+
+            # =========================
+            # Guardar estadisticas
+            # =========================
+            self.estadisticas = {
+                "lineas": cantidad_lineas,
+                "caracteres": cantidad_caracteres,
+                "enteros": conta_enteros,
+                "flotantes": conta_flotantes,
+                "identificadores":
+                    conta_identificadores,
+                "booleanos": conta_booleanos,
+                "cadenas": conta_cadenas,
+                "operadores": conta_operadores,
+                "reservadas":
+                    conteo_reservadas
+            }
+
+            # =========================
+            # Mostrar estadisticas
+            # =========================
+            self.lblReservadas.setText(
+                str(conta_reservadas)
+            )
+
+            self.lblIdentificadores.setText(
+                str(conta_identificadores)
+            )
+
+            self.lblEnteros.setText(
+                str(conta_enteros)
+            )
+
+            self.lblFlotantes.setText(
+                str(conta_flotantes)
+            )
+
+            self.lblBooleanos.setText(
+                str(conta_booleanos)
+            )
+
+            self.lblCadenas.setText(
+                str(conta_cadenas)
+            )
+
+            self.lblOperadores.setText(
+                str(conta_operadores)
+            )
+
+            self.lblLineas.setText(
+                str(cantidad_lineas)
+            )
+
+            self.lblCaracteres.setText(
+                str(cantidad_caracteres)
+            )
+
+            total_tokens = len(
+                self.tokens
+            )
+
             self.lblTokens.setText(
-                "Tokens encontrados: " + str(total_tokens)
+                "Tokens encontrados: " +
+                str(total_tokens)
+            )
+
+            self.lblEstado.setText(
+                "●  Estado:  Análisis completado"
+            )
+
+            QMessageBox.information(
+                self,
+                "Análisis completado",
+                "El archivo Ruby fue analizado correctamente."
+            )
+
+        except Exception as error:
+
+            self.lblEstado.setText(
+                "●  Estado:  Error durante el análisis"
+            )
+
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"No se pudo ejecutar el analizador:\n{error}"
             )
 
     def abrirArchivo(self):
@@ -475,6 +777,19 @@ class VentanaPrincipal(QMainWindow):
 
     def crearReporte1(self):
 
+        # =========================
+        # Validar analisis
+        # =========================
+        if not self.estadisticas:
+
+            QMessageBox.warning(
+                self,
+                "Reporte General",
+                "Primero debe analizar un archivo Ruby."
+            )
+
+            return
+
         archivo, _ = QFileDialog.getSaveFileName(
             self,
             "Guardar Reporte General",
@@ -488,32 +803,11 @@ class VentanaPrincipal(QMainWindow):
         if not archivo.endswith(".pdf"):
             archivo += ".pdf"
 
-        # Datos temporales mientras se conecta Flex
-        estadisticas = {
-            "lineas": 85,
-            "caracteres": 2450,
-            "enteros": 14,
-            "flotantes": 6,
-            "identificadores": 39,
-            "booleanos": 4,
-            "operadores": 27,
-
-            "reservadas": {
-                "def": 9,
-                "end": 9,
-                "if": 5,
-                "class": 3,
-                "else": 2,
-                "while": 2,
-                "return": 1
-            }
-        }
-
         try:
 
             generar_reporte_1(
                 archivo,
-                estadisticas
+                self.estadisticas
             )
 
             QMessageBox.information(
@@ -532,6 +826,19 @@ class VentanaPrincipal(QMainWindow):
 
     def crearReporte2(self):
 
+        # =========================
+        # Validar analisis
+        # =========================
+        if not self.tokens:
+
+            QMessageBox.warning(
+                self,
+                "Reporte de Símbolos",
+                "Primero debe analizar un archivo Ruby."
+            )
+
+            return
+
         archivo, _ = QFileDialog.getSaveFileName(
             self,
             "Guardar Reporte de Símbolos",
@@ -545,59 +852,12 @@ class VentanaPrincipal(QMainWindow):
         if not archivo.endswith(".pdf"):
             archivo += ".pdf"
 
-        # Datos temporales mientras se conecta Flex
-        tokens = [
-            {
-                "lexema": "class",
-                "token": "TK_CLASS",
-                "linea": 1
-            },
-            {
-                "lexema": "Persona",
-                "token": "TK_IDENTIFICADOR",
-                "linea": 1
-            },
-            {
-                "lexema": "=",
-                "token": "TK_ASIGNACION",
-                "linea": 3
-            },
-            {
-                "lexema": "25",
-                "token": "TK_ENTERO",
-                "linea": 3
-            },
-            {
-                "lexema": "+",
-                "token": "TK_SUMA",
-                "linea": 5
-            }
-        ]
-
-        simbolos = [
-            {
-                "lexema": "Persona",
-                "tipo": "Clase",
-                "linea": 1
-            },
-            {
-                "lexema": "edad",
-                "tipo": "Variable",
-                "linea": 3
-            },
-            {
-                "lexema": "calcular",
-                "tipo": "Función",
-                "linea": 5
-            }
-        ]
-
         try:
 
             generar_reporte_2(
                 archivo,
-                tokens,
-                simbolos
+                self.tokens,
+                self.simbolos
             )
 
             QMessageBox.information(
@@ -612,4 +872,44 @@ class VentanaPrincipal(QMainWindow):
                 self,
                 "Error",
                 f"No se pudo generar el reporte:\n{error}"
+            )
+
+    def guardarMongoDB(self):
+
+        # =========================
+        # Validar tabla de simbolos
+        # =========================
+        if not self.simbolos:
+
+            QMessageBox.warning(
+                self,
+                "MongoDB",
+                "Primero debe analizar un archivo Ruby."
+            )
+
+            return
+
+        try:
+
+            cantidad = guardar_tabla_simbolos(
+                self.simbolos
+            )
+
+            QMessageBox.information(
+                self,
+                "MongoDB",
+                f"Tabla de símbolos guardada correctamente.\n\n"
+                f"Registros guardados: {cantidad}"
+            )
+
+            self.lblEstado.setText(
+                "●  Estado:  Tabla de símbolos guardada en MongoDB"
+            )
+
+        except Exception as error:
+
+            QMessageBox.critical(
+                self,
+                "Error MongoDB",
+                str(error)
             )
