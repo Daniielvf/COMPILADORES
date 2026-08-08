@@ -323,7 +323,7 @@ class VentanaPrincipal(QMainWindow):
 
          cantidad_lineas = len(contenido)
          cantidad_caracteres = 0
-        self.lblEstado.setText(
+         self.lblEstado.setText(
             "●  Estado:  Analizando..."
         )
 
@@ -438,11 +438,10 @@ class VentanaPrincipal(QMainWindow):
                     fila = self.tabla.rowCount()
                     self.tabla.insertRow(fila)
 
-                    self.tabla.setItem(fila, 0, QTableWidgetItem(str(fila + 1)))
-                    self.tabla.setItem(fila, 1, QTableWidgetItem(token))
-                    self.tabla.setItem(fila, 2, QTableWidgetItem(lexema))
-                    self.tabla.setItem(fila, 3, QTableWidgetItem(tipo))
-                    self.tabla.setItem(fila, 4, QTableWidgetItem(numero_linea))
+                    self.tabla.setItem(fila, 0, QTableWidgetItem(token))
+                    self.tabla.setItem(fila, 1, QTableWidgetItem(lexema))
+                    self.tabla.setItem(fila, 2, QTableWidgetItem(tipo))
+                    self.tabla.setItem(fila, 3, QTableWidgetItem(numero_linea))
 
             self.lblReservadas.setText(str(conta_reservadas))
             self.lblIdentificadores.setText(str(conta_identificadores))
