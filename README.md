@@ -16,10 +16,10 @@ Desarrollar un analizador lexico utilizando Flex para procesar archivos escritos
 ## Tecnologias
 
 - Flex
-- C#
+- Python
 - MongoDB
 - Windows Forms
 
 ## Estado del proyecto
 
-En desarrollo.
+En desarrollo Funcionalidades y Características ( Interfaz de Usuario)
