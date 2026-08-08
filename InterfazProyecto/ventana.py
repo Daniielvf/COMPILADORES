@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from estilos import ESTILO
+import subprocess
+import os
 
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -306,21 +308,150 @@ class VentanaPrincipal(QMainWindow):
 
     def analizar(self):
 
-        if not self.txtArchivo.text():
+         archivo = self.txtArchivo.text()
+
+         if archivo == "":
             QMessageBox.warning(
                 self,
-                "Advertencia",
-                "Primero debe seleccionar un archivo Ruby."
+                "Error",
+                "Seleccione un archivo Ruby."
             )
             return
+         with open(archivo, "r") as archivo_ruby:
+            contenido = archivo_ruby.readlines()
 
-        self.lblEstado.setText("●  Estado:  Analizando...")
+         cantidad_lineas = len(contenido)
+         cantidad_caracteres = 0
 
-        QMessageBox.information(
-            self,
-            "Analizador",
-            "Aquí ejecutaremos el analizador léxico."
-        )
+         for linea_archivo in contenido:
+            cantidad_caracteres += len(linea_archivo)
+
+         self.lblLineas.setText(str(cantidad_lineas))
+         self.lblCaracteres.setText(str(cantidad_caracteres))
+         ruta_analizador = os.path.join(
+         os.path.dirname(__file__),
+         "..",
+         "Analizador",
+         "Analizador"
+         )
+
+         print("Archivo Ruby:", archivo)
+         print("Analizador Flex:", ruta_analizador)
+         with open(archivo, "r") as entrada:
+
+            resultado = subprocess.run(
+                [ruta_analizador],
+                stdin=entrada,
+                capture_output=True,
+                text=True
+            )
+
+         lineas_resultado = resultado.stdout.splitlines()
+         self.tabla.setRowCount(0)
+         conta_reservadas = 0
+         conta_identificadores = 0
+         conta_enteros = 0
+         conta_flotantes = 0
+         conta_booleanos = 0
+         conta_cadenas = 0
+         conta_operadores = 0
+         for resultado_linea in lineas_resultado:
+
+            partes = resultado_linea.split(" -> ")
+
+            if len(partes) == 2:
+
+                izquierda = partes[0]
+                lexema = partes[1]
+
+                datos = izquierda.split(": ")
+
+                if len(datos) == 2:
+                    tipo = datos[1]
+
+                    if tipo == "Palabra reservada":
+                        conta_reservadas += 1
+
+                    elif tipo == "Identificador":
+                        conta_identificadores += 1
+
+                    elif tipo == "Entero":
+                        conta_enteros += 1
+
+                    elif tipo == "Flotante":
+                        conta_flotantes += 1
+
+                    elif tipo == "Booleano":
+                        conta_booleanos += 1
+
+                    elif tipo == "Cadena":
+                        conta_cadenas += 1
+
+                    elif tipo == "Operador":
+                        conta_operadores += 1
+
+
+
+                    if tipo == "Palabra reservada":
+                        token = "palabra reservada"
+
+                    elif tipo == "Identificador":
+                        token = "ID"
+
+                    elif tipo == "Entero":
+                        token = "entero"
+
+                    elif tipo == "Flotante":
+                        token = "flotante"
+
+                    elif tipo == "Booleano":
+                        token = "booleano"
+
+                    elif tipo == "Cadena":
+                        token = "cadena"
+                    elif tipo == "Operador":
+
+                        if lexema == "=":
+                            token = "op_asi"
+
+                        elif lexema == "+" or lexema == "-" or lexema == "*" or lexema == "/" or lexema == "%":
+                            token = "operador aritmetico"
+
+                        elif lexema == "==" or lexema == "!=" or lexema == ">" or lexema == "<" or lexema == ">=" or lexema == "<=":
+                            token = "operador relacional"
+
+                        elif lexema == "&&" or lexema == "||" or lexema == "!":
+                            token = "operador logico"
+
+                        else:
+                            token = "operador"
+                    else:
+                        token = tipo
+
+                    numero_linea = datos[0].replace("Linea ", "")
+                    tipo = datos[1]
+
+                    fila = self.tabla.rowCount()
+                    self.tabla.insertRow(fila)
+
+                    self.tabla.setItem(fila, 0, QTableWidgetItem(str(fila + 1)))
+                    self.tabla.setItem(fila, 1, QTableWidgetItem(token))
+                    self.tabla.setItem(fila, 2, QTableWidgetItem(lexema))
+                    self.tabla.setItem(fila, 3, QTableWidgetItem(tipo))
+                    self.tabla.setItem(fila, 4, QTableWidgetItem(numero_linea))
+
+            self.lblReservadas.setText(str(conta_reservadas))
+            self.lblIdentificadores.setText(str(conta_identificadores))
+            self.lblEnteros.setText(str(conta_enteros))
+            self.lblFlotantes.setText(str(conta_flotantes))
+            self.lblBooleanos.setText(str(conta_booleanos))
+            self.lblCadenas.setText(str(conta_cadenas))
+            self.lblOperadores.setText(str(conta_operadores))
+
+            total_tokens = self.tabla.rowCount()
+            self.lblTokens.setText(
+                "Tokens encontrados: " + str(total_tokens)
+            )
 
     def abrirArchivo(self):
 
