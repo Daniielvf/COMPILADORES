@@ -3,6 +3,7 @@ from PySide6.QtGui import QPixmap
 from estilos import ESTILO
 import subprocess
 import os
+from reportes.generador_pdf import generar_reporte_1, generar_reporte_2
 
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -61,6 +62,7 @@ class VentanaPrincipal(QMainWindow):
                 Qt.KeepAspectRatio,
                 Qt.SmoothTransformation
             )
+
             self.logo.setPixmap(pixmap)
 
         textos = QVBoxLayout()
@@ -71,6 +73,7 @@ class VentanaPrincipal(QMainWindow):
         subtitulo = QLabel(
             "Analiza archivos .rb e identifica sus tokens léxicos"
         )
+
         subtitulo.setObjectName("subtitulo")
 
         textos.addWidget(titulo)
@@ -98,6 +101,7 @@ class VentanaPrincipal(QMainWindow):
         self.txtArchivo.setPlaceholderText(
             "Seleccione un archivo Ruby (.rb)"
         )
+
         self.txtArchivo.setReadOnly(True)
 
         self.btnExaminar = QPushButton("📂  Examinar")
@@ -173,24 +177,21 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         self.tabla = QTableWidget()
 
-        self.tabla.setColumnCount(5)
+        self.tabla.setColumnCount(4)
 
         self.tabla.setHorizontalHeaderLabels([
-            "No.",
             "Token",
             "Lexema",
             "Tipo",
             "Línea"
         ])
 
-        # La columna No. será pequeña
+        # Las columnas ocupan el espacio disponible
         self.tabla.horizontalHeader().setSectionResizeMode(
             0,
-            QHeaderView.Fixed
+            QHeaderView.Stretch
         )
-        self.tabla.setColumnWidth(0, 55)
 
-        # Las demás columnas ocupan el espacio disponible
         self.tabla.horizontalHeader().setSectionResizeMode(
             1,
             QHeaderView.Stretch
@@ -201,17 +202,13 @@ class VentanaPrincipal(QMainWindow):
             QHeaderView.Stretch
         )
 
+        # Línea será un poco más pequeña
         self.tabla.horizontalHeader().setSectionResizeMode(
             3,
-            QHeaderView.Stretch
-        )
-
-        # Línea también será un poco más pequeña
-        self.tabla.horizontalHeader().setSectionResizeMode(
-            4,
             QHeaderView.Fixed
         )
-        self.tabla.setColumnWidth(4, 80)
+
+        self.tabla.setColumnWidth(3, 80)
 
         self.tabla.setAlternatingRowColors(True)
         self.tabla.setMinimumHeight(250)
@@ -266,6 +263,9 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         # Conectar botones
         # =========================
+        self.btnReporte1.clicked.connect(self.crearReporte1)
+        self.btnReporte2.clicked.connect(self.crearReporte2)
+
         self.btnSalir.clicked.connect(self.close)
         self.btnAnalizar.clicked.connect(self.analizar)
         self.btnExaminar.clicked.connect(self.abrirArchivo)
@@ -316,12 +316,16 @@ class VentanaPrincipal(QMainWindow):
                 "Error",
                 "Seleccione un archivo Ruby."
             )
+
             return
          with open(archivo, "r") as archivo_ruby:
             contenido = archivo_ruby.readlines()
 
          cantidad_lineas = len(contenido)
          cantidad_caracteres = 0
+        self.lblEstado.setText(
+            "●  Estado:  Analizando..."
+        )
 
          for linea_archivo in contenido:
             cantidad_caracteres += len(linea_archivo)
@@ -463,8 +467,150 @@ class VentanaPrincipal(QMainWindow):
         )
 
         if archivo:
+
             self.txtArchivo.setText(archivo)
 
             self.lblEstado.setText(
                 "●  Estado:  Archivo cargado correctamente"
+            )
+
+    def crearReporte1(self):
+
+        archivo, _ = QFileDialog.getSaveFileName(
+            self,
+            "Guardar Reporte General",
+            "Reporte_General.pdf",
+            "Archivos PDF (*.pdf)"
+        )
+
+        if not archivo:
+            return
+
+        if not archivo.endswith(".pdf"):
+            archivo += ".pdf"
+
+        # Datos temporales mientras se conecta Flex
+        estadisticas = {
+            "lineas": 85,
+            "caracteres": 2450,
+            "enteros": 14,
+            "flotantes": 6,
+            "identificadores": 39,
+            "booleanos": 4,
+            "operadores": 27,
+
+            "reservadas": {
+                "def": 9,
+                "end": 9,
+                "if": 5,
+                "class": 3,
+                "else": 2,
+                "while": 2,
+                "return": 1
+            }
+        }
+
+        try:
+
+            generar_reporte_1(
+                archivo,
+                estadisticas
+            )
+
+            QMessageBox.information(
+                self,
+                "Reporte generado",
+                "El Reporte General se generó correctamente."
+            )
+
+        except Exception as error:
+
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"No se pudo generar el reporte:\n{error}"
+            )
+
+    def crearReporte2(self):
+
+        archivo, _ = QFileDialog.getSaveFileName(
+            self,
+            "Guardar Reporte de Símbolos",
+            "Reporte_Simbolos.pdf",
+            "Archivos PDF (*.pdf)"
+        )
+
+        if not archivo:
+            return
+
+        if not archivo.endswith(".pdf"):
+            archivo += ".pdf"
+
+        # Datos temporales mientras se conecta Flex
+        tokens = [
+            {
+                "lexema": "class",
+                "token": "TK_CLASS",
+                "linea": 1
+            },
+            {
+                "lexema": "Persona",
+                "token": "TK_IDENTIFICADOR",
+                "linea": 1
+            },
+            {
+                "lexema": "=",
+                "token": "TK_ASIGNACION",
+                "linea": 3
+            },
+            {
+                "lexema": "25",
+                "token": "TK_ENTERO",
+                "linea": 3
+            },
+            {
+                "lexema": "+",
+                "token": "TK_SUMA",
+                "linea": 5
+            }
+        ]
+
+        simbolos = [
+            {
+                "lexema": "Persona",
+                "tipo": "Clase",
+                "linea": 1
+            },
+            {
+                "lexema": "edad",
+                "tipo": "Variable",
+                "linea": 3
+            },
+            {
+                "lexema": "calcular",
+                "tipo": "Función",
+                "linea": 5
+            }
+        ]
+
+        try:
+
+            generar_reporte_2(
+                archivo,
+                tokens,
+                simbolos
+            )
+
+            QMessageBox.information(
+                self,
+                "Reporte generado",
+                "El Reporte de Símbolos se generó correctamente."
+            )
+
+        except Exception as error:
+
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"No se pudo generar el reporte:\n{error}"
             )
