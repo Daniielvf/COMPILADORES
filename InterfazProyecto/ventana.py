@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 from estilos import ESTILO
 
 from PySide6.QtWidgets import (
-    QApplication,
     QFileDialog,
     QGridLayout,
     QGroupBox,
@@ -14,8 +14,10 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
-    QWidget
+    QWidget,
+    QFrame
 )
 
 
@@ -26,7 +28,7 @@ class VentanaPrincipal(QMainWindow):
 
         self.setStyleSheet(ESTILO)
         self.setWindowTitle("Analizador Léxico Ruby")
-        self.resize(1000, 700)
+        self.resize(1150, 850)
 
         # =========================
         # Ventana principal
@@ -35,95 +37,132 @@ class VentanaPrincipal(QMainWindow):
         self.setCentralWidget(widget)
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(30, 20, 30, 20)
+        layout.setSpacing(15)
+
         widget.setLayout(layout)
 
         # =========================
         # Titulo
         # =========================
+        encabezado = QHBoxLayout()
+
+        self.logo = QLabel()
+        self.logo.setFixedSize(65, 65)
+
+        pixmap = QPixmap("recursos/ruby.png")
+
+        if not pixmap.isNull():
+            pixmap = pixmap.scaled(
+                60,
+                60,
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+            self.logo.setPixmap(pixmap)
+
+        textos = QVBoxLayout()
+
         titulo = QLabel("ANALIZADOR LÉXICO PARA RUBY")
-        titulo.setAlignment(Qt.AlignCenter)
+        titulo.setObjectName("tituloPrincipal")
 
-        titulo.setStyleSheet("""
-            font-size:30px;
-            font-weight:bold;
-            color:#1F3A93;
-            padding:10px;
-        """)
+        subtitulo = QLabel(
+            "Analiza archivos .rb e identifica sus tokens léxicos"
+        )
+        subtitulo.setObjectName("subtitulo")
 
-        layout.addWidget(titulo)
+        textos.addWidget(titulo)
+        textos.addWidget(subtitulo)
+
+        encabezado.addWidget(self.logo)
+        encabezado.addLayout(textos)
+        encabezado.addStretch()
+
+        layout.addLayout(encabezado)
 
         # =========================
         # Selección de archivo
         # =========================
+        panelArchivo = QFrame()
+        panelArchivo.setObjectName("panelArchivo")
+
         archivoLayout = QHBoxLayout()
+        archivoLayout.setContentsMargins(20, 15, 20, 15)
+
+        lblArchivo = QLabel("Archivo Ruby:")
+        lblArchivo.setObjectName("labelArchivo")
 
         self.txtArchivo = QLineEdit()
-        self.txtArchivo.setPlaceholderText("Seleccione un archivo Ruby (.rb)")
+        self.txtArchivo.setPlaceholderText(
+            "Seleccione un archivo Ruby (.rb)"
+        )
+        self.txtArchivo.setReadOnly(True)
 
-        self.btnExaminar = QPushButton("📂 Examinar")
-        self.btnExaminar.setMinimumHeight(40)
+        self.btnExaminar = QPushButton("📂  Examinar")
+        self.btnExaminar.setObjectName("btnSecundario")
+        self.btnExaminar.setMinimumWidth(150)
+        self.btnExaminar.setMinimumHeight(45)
 
-        archivoLayout.addWidget(self.txtArchivo)
-        archivoLayout.addWidget(self.btnExaminar)
-
-        layout.addLayout(archivoLayout)
-
-        # =========================
-        # Accion de Boton Analizar
-        # =========================
-        self.btnAnalizar = QPushButton("▶ Analizar")
+        self.btnAnalizar = QPushButton("▷  Analizar")
+        self.btnAnalizar.setObjectName("btnPrincipal")
+        self.btnAnalizar.setMinimumWidth(150)
         self.btnAnalizar.setMinimumHeight(45)
 
-        analizarLayout = QHBoxLayout()
-        analizarLayout.addStretch()
-        analizarLayout.addWidget(self.btnAnalizar)
-        analizarLayout.addStretch()
+        archivoLayout.addWidget(lblArchivo)
+        archivoLayout.addWidget(self.txtArchivo, 1)
+        archivoLayout.addWidget(self.btnExaminar)
+        archivoLayout.addWidget(self.btnAnalizar)
 
-        layout.addLayout(analizarLayout)
+        panelArchivo.setLayout(archivoLayout)
+
+        layout.addWidget(panelArchivo)
 
         # =========================
         # Estadisticas
         # =========================
-        grupo = QGroupBox("Estadísticas")
+        grupo = QGroupBox("ESTADÍSTICAS")
+        grupo.setObjectName("grupoEstadisticas")
 
         grid = QGridLayout()
+        grid.setSpacing(12)
+
         grupo.setLayout(grid)
 
-        grid.addWidget(QLabel("Reservadas"), 0, 0)
-        self.lblReservadas = QLabel("0")
-        grid.addWidget(self.lblReservadas, 0, 1)
+        self.lblReservadas = self.crearTarjeta(
+            grid, 0, 0, "🔖", "Reservadas"
+        )
 
-        grid.addWidget(QLabel("Identificadores"), 1, 0)
-        self.lblIdentificadores = QLabel("0")
-        grid.addWidget(self.lblIdentificadores, 1, 1)
+        self.lblIdentificadores = self.crearTarjeta(
+            grid, 0, 1, "ID", "Identificadores"
+        )
 
-        grid.addWidget(QLabel("Enteros"), 2, 0)
-        self.lblEnteros = QLabel("0")
-        grid.addWidget(self.lblEnteros, 2, 1)
+        self.lblEnteros = self.crearTarjeta(
+            grid, 0, 2, "123", "Enteros"
+        )
 
-        grid.addWidget(QLabel("Flotantes"), 3, 0)
-        self.lblFlotantes = QLabel("0")
-        grid.addWidget(self.lblFlotantes, 3, 1)
+        self.lblFlotantes = self.crearTarjeta(
+            grid, 1, 0, "1.23", "Flotantes"
+        )
 
-        grid.addWidget(QLabel("Booleanos"), 4, 0)
-        self.lblBooleanos = QLabel("0")
-        grid.addWidget(self.lblBooleanos, 4, 1)
+        self.lblBooleanos = self.crearTarjeta(
+            grid, 1, 1, "true", "Booleanos"
+        )
 
-        grid.addWidget(QLabel("Cadenas"), 5, 0)
-        self.lblCadenas = QLabel("0")
-        grid.addWidget(self.lblCadenas, 5, 1)
+        self.lblCadenas = self.crearTarjeta(
+            grid, 1, 2, "❝", "Cadenas"
+        )
 
-        grid.addWidget(QLabel("Operadores"), 6, 0)
-        self.lblOperadores = QLabel("0")
-        grid.addWidget(self.lblOperadores, 6, 1)
+        self.lblOperadores = self.crearTarjeta(
+            grid, 2, 0, "+−*/", "Operadores"
+        )
 
-        grid.addWidget(QLabel("Lineas"), 7, 0)
-        self.lblLineas = QLabel("0")
-        grid.addWidget(self.lblLineas, 7, 1)
+        self.lblLineas = self.crearTarjeta(
+            grid, 2, 1, "☷", "Líneas"
+        )
 
-        grid.addWidget(QLabel("Caracteres"), 8, 0)
-        self.lblCaracteres = QLabel("0")
-        grid.addWidget(self.lblCaracteres, 8, 1)
+        self.lblCaracteres = self.crearTarjeta(
+            grid, 2, 2, "A", "Caracteres"
+        )
 
         layout.addWidget(grupo)
 
@@ -132,35 +171,88 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         self.tabla = QTableWidget()
 
-        self.tabla.setColumnCount(4)
+        self.tabla.setColumnCount(5)
 
         self.tabla.setHorizontalHeaderLabels([
+            "No.",
             "Token",
             "Lexema",
             "Tipo",
-            "Linea"
+            "Línea"
         ])
 
-        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # La columna No. será pequeña
+        self.tabla.horizontalHeader().setSectionResizeMode(
+            0,
+            QHeaderView.Fixed
+        )
+        self.tabla.setColumnWidth(0, 55)
+
+        # Las demás columnas ocupan el espacio disponible
+        self.tabla.horizontalHeader().setSectionResizeMode(
+            1,
+            QHeaderView.Stretch
+        )
+
+        self.tabla.horizontalHeader().setSectionResizeMode(
+            2,
+            QHeaderView.Stretch
+        )
+
+        self.tabla.horizontalHeader().setSectionResizeMode(
+            3,
+            QHeaderView.Stretch
+        )
+
+        # Línea también será un poco más pequeña
+        self.tabla.horizontalHeader().setSectionResizeMode(
+            4,
+            QHeaderView.Fixed
+        )
+        self.tabla.setColumnWidth(4, 80)
+
         self.tabla.setAlternatingRowColors(True)
         self.tabla.setMinimumHeight(250)
 
         layout.addWidget(self.tabla)
 
         # =========================
+        # Estado
+        # =========================
+        estadoLayout = QHBoxLayout()
+
+        self.lblEstado = QLabel("●  Estado:  Listo para analizar")
+        self.lblEstado.setObjectName("estado")
+
+        self.lblTokens = QLabel("Tokens encontrados:  0")
+        self.lblTokens.setObjectName("tokensEncontrados")
+
+        estadoLayout.addWidget(self.lblEstado)
+        estadoLayout.addStretch()
+        estadoLayout.addWidget(self.lblTokens)
+
+        layout.addLayout(estadoLayout)
+
+        # =========================
         # Botones de abajo
         # =========================
         botones = QHBoxLayout()
+        botones.setSpacing(12)
 
-        self.btnReporte1 = QPushButton("📄 Reporte General")
-        self.btnReporte2 = QPushButton("📑 Tabla de Símbolos")
-        self.btnMongo = QPushButton("💾 MongoDB")
-        self.btnSalir = QPushButton("❌ Salir")
+        self.btnReporte1 = QPushButton("▣  Reporte General")
+        self.btnReporte2 = QPushButton("▦  Tabla de Símbolos")
+        self.btnMongo = QPushButton("◉  MongoDB")
+        self.btnSalir = QPushButton("✕  Salir")
 
-        self.btnReporte1.setMinimumHeight(40)
-        self.btnReporte2.setMinimumHeight(40)
-        self.btnMongo.setMinimumHeight(40)
-        self.btnSalir.setMinimumHeight(40)
+        self.btnReporte1.setObjectName("btnInferior")
+        self.btnReporte2.setObjectName("btnInferior")
+        self.btnMongo.setObjectName("btnInferior")
+        self.btnSalir.setObjectName("btnSalir")
+
+        self.btnReporte1.setMinimumHeight(45)
+        self.btnReporte2.setMinimumHeight(45)
+        self.btnMongo.setMinimumHeight(45)
+        self.btnSalir.setMinimumHeight(45)
 
         botones.addWidget(self.btnReporte1)
         botones.addWidget(self.btnReporte2)
@@ -180,7 +272,50 @@ class VentanaPrincipal(QMainWindow):
     # Los metodos
     # ======================================
 
+    def crearTarjeta(self, grid, fila, columna, icono, texto):
+
+        tarjeta = QFrame()
+        tarjeta.setObjectName("tarjeta")
+
+        layoutTarjeta = QHBoxLayout()
+        layoutTarjeta.setContentsMargins(15, 12, 15, 12)
+
+        lblIcono = QLabel(icono)
+        lblIcono.setObjectName("iconoTarjeta")
+        lblIcono.setFixedWidth(55)
+
+        datos = QVBoxLayout()
+
+        lblTexto = QLabel(texto)
+        lblTexto.setObjectName("textoTarjeta")
+
+        lblNumero = QLabel("0")
+        lblNumero.setObjectName("numeroTarjeta")
+
+        datos.addWidget(lblTexto)
+        datos.addWidget(lblNumero)
+
+        layoutTarjeta.addWidget(lblIcono)
+        layoutTarjeta.addLayout(datos)
+
+        tarjeta.setLayout(layoutTarjeta)
+
+        grid.addWidget(tarjeta, fila, columna)
+
+        return lblNumero
+
     def analizar(self):
+
+        if not self.txtArchivo.text():
+            QMessageBox.warning(
+                self,
+                "Advertencia",
+                "Primero debe seleccionar un archivo Ruby."
+            )
+            return
+
+        self.lblEstado.setText("●  Estado:  Analizando...")
+
         QMessageBox.information(
             self,
             "Analizador",
@@ -198,3 +333,7 @@ class VentanaPrincipal(QMainWindow):
 
         if archivo:
             self.txtArchivo.setText(archivo)
+
+            self.lblEstado.setText(
+                "●  Estado:  Archivo cargado correctamente"
+            )
