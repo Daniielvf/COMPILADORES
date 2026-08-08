@@ -175,25 +175,21 @@ class VentanaPrincipal(QMainWindow):
         # =========================
         self.tabla = QTableWidget()
 
-        self.tabla.setColumnCount(5)
+        self.tabla.setColumnCount(4)
 
         self.tabla.setHorizontalHeaderLabels([
-            "No.",
             "Token",
             "Lexema",
             "Tipo",
             "Línea"
         ])
 
-        # La columna No. será pequeña
+        # Las columnas ocupan el espacio disponible
         self.tabla.horizontalHeader().setSectionResizeMode(
             0,
-            QHeaderView.Fixed
+            QHeaderView.Stretch
         )
 
-        self.tabla.setColumnWidth(0, 55)
-
-        # Las demás columnas ocupan el espacio disponible
         self.tabla.horizontalHeader().setSectionResizeMode(
             1,
             QHeaderView.Stretch
@@ -204,18 +200,13 @@ class VentanaPrincipal(QMainWindow):
             QHeaderView.Stretch
         )
 
+        # Línea será un poco más pequeña
         self.tabla.horizontalHeader().setSectionResizeMode(
             3,
-            QHeaderView.Stretch
-        )
-
-        # Línea también será un poco más pequeña
-        self.tabla.horizontalHeader().setSectionResizeMode(
-            4,
             QHeaderView.Fixed
         )
 
-        self.tabla.setColumnWidth(4, 80)
+        self.tabla.setColumnWidth(3, 80)
 
         self.tabla.setAlternatingRowColors(True)
         self.tabla.setMinimumHeight(250)
