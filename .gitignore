@@ -1,0 +1,14 @@
+# Archivos generados por Flex
+Analizador/lex.yy.c
+Analizador/Analizador
+
+# Ejecutables
+*.exe
+*.out
+
+# Carpetas de Visual Studio
+bin/
+obj/
+
+# Archivos temporales
+*.o
