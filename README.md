@@ -22,4 +22,4 @@ Desarrollar un analizador lexico utilizando Flex para procesar archivos escritos
 
 ## Estado del proyecto
 
-En desarrollo Funcionalidades y Características ( Interfaz de Usuario)
+Proyecto Finalizado 
